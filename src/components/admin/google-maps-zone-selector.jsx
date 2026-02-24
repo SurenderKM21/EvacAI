@@ -6,7 +6,7 @@ import {
   Marker,
   Polygon,
 } from '@react-google-maps/api';
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { Trash2, AlertTriangle, MapPin, Focus } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
@@ -29,10 +29,6 @@ const polygonOptions = {
   strokeOpacity: 0.9,
   strokeWeight: 3,
   clickable: false,
-  draggable: false,
-  editable: false,
-  geodesic: false,
-  zIndex: 1,
 };
 
 export function GoogleMapsZoneSelector({
@@ -55,6 +51,7 @@ export function GoogleMapsZoneSelector({
     
     mapInstance.fitBounds(bounds);
     
+    // Prevent excessive zooming if zone is a single point or small
     const listener = window.google.maps.event.addListener(mapInstance, 'idle', () => {
       if (mapInstance.getZoom() > 20) mapInstance.setZoom(19);
       window.google.maps.event.removeListener(listener);

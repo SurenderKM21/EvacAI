@@ -18,7 +18,6 @@ function AdminAuthGuard() {
 
   const isAuthenticated = !!user;
   const isAdminByRole = profile?.role === 'admin';
-  const isAuthorized = isAuthenticated && isAdminByRole;
   const isDataReady = !isUserLoading && !isProfileLoading;
 
   useEffect(() => {
@@ -29,12 +28,14 @@ function AdminAuthGuard() {
       return;
     }
 
-    if (!isAuthorized) {
+    // Only redirect to user page if we are SURE they are not an admin
+    // If profile is missing, we wait for setDoc to propagate
+    if (profile && profile.role === 'user') {
       router.push('/user');
     }
-  }, [isDataReady, isAuthenticated, isAuthorized, router]);
+  }, [isDataReady, isAuthenticated, profile, router]);
 
-  if (!isDataReady) {
+  if (!isDataReady || (isAuthenticated && !profile)) {
     return (
       <div className="flex h-screen items-center justify-center gap-2">
         <Loader className="h-6 w-6 animate-spin text-primary" />
@@ -43,7 +44,7 @@ function AdminAuthGuard() {
     );
   }
 
-  if (!isAuthorized) {
+  if (!isAdminByRole) {
     return (
       <div className="flex flex-col h-screen items-center justify-center gap-4 text-center p-8">
         <Lock className="h-12 w-12 text-destructive" />

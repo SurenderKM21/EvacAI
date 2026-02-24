@@ -74,10 +74,16 @@ export function UserDashboard({ userId }) {
   const enrichedZones = useMemo(() => {
     return zones.map(zone => {
       const count = users.filter(u => u.lastZoneId === zone.id && u.status === 'online').length;
-      const isOverrideActive = zone.manualDensity && 
-                               (zone.manualDensityAtCount === undefined || count === zone.manualDensityAtCount);
-      const density = isOverrideActive ? zone.density : calculateDensity(count, zone.capacity);
-      return { ...zone, userCount: count, density };
+      
+      const isOverrideStale = zone.manualDensity && 
+                              zone.manualDensityAtCount !== undefined && 
+                              count !== zone.manualDensityAtCount;
+      
+      const density = (zone.manualDensity && !isOverrideStale) 
+                      ? zone.density 
+                      : calculateDensity(count, zone.capacity);
+      
+      return { ...zone, userCount: count, density, isOverrideStale };
     });
   }, [zones, users]);
 
@@ -92,6 +98,7 @@ export function UserDashboard({ userId }) {
   const [latestAlert, setLatestAlert] = useState(null);
 
   useEffect(() => {
+    // Fixed: Added safety check for alertsData being null
     if (alertsData && alertsData.length > 0 && userProfile) {
       const applicableAlert = alertsData[0];
       const lastSeen = localStorage.getItem(LAST_SEEN_ALERT_KEY);
