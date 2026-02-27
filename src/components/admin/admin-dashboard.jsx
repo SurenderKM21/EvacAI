@@ -39,6 +39,7 @@ export function AdminDashboard({ userId }) {
 
   const enrichedZones = useMemo(() => {
     return zones.map(zone => {
+      // Consistently count only online user-role accounts
       const count = users.filter(u => 
         u.lastZoneId === zone.id && 
         u.status === 'online' && 

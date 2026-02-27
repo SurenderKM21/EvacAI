@@ -68,15 +68,13 @@ export function GoogleMapsZoneSelector({
           };
           mapInstance.panTo(pos);
           mapInstance.setZoom(18);
-        },
-        () => {
-          console.log("Geolocation permission denied or error.");
         }
       );
     }
   }, [mapInstance]);
 
   useEffect(() => {
+    // Aggressive focus: If editing (coords > 0), fitBounds. If adding (coords == 0), geolocation.
     if (mapInstance && !initialFocusDone.current) {
       if (coordinates && coordinates.length > 0) {
         focusOnZone();
@@ -201,7 +199,7 @@ export function GoogleMapsZoneSelector({
       </GoogleMap>
       
       <p className="text-xs text-muted-foreground italic bg-muted/50 p-2 rounded">
-        The map focuses on your current location when adding. Use red markers to define boundaries.
+        Red markers show existing boundaries. Drag points to refine or click empty space to add.
       </p>
     </div>
   );

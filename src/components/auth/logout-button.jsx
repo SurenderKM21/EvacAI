@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Loader } from 'lucide-react';
 import { logoutUserAction } from '@/lib/actions';
 import { useFirestore, useUser } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
 
@@ -19,9 +18,12 @@ export function LogoutButton() {
     startTransition(async () => {
        if (user) {
           try {
+            // We await the status update to ensure it hits the server 
+            // before the auth session is invalidated.
             const userRef = doc(db, 'users', user.uid);
-            updateDocumentNonBlocking(userRef, { status: 'offline' });
+            await updateDoc(userRef, { status: 'offline' });
           } catch (e) {
+            // If it fails (e.g. no connection), we still want to log out
             console.error('Failed to mark user as offline:', e);
           }
        }
