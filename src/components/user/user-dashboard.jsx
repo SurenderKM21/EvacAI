@@ -74,7 +74,7 @@ export function UserDashboard({ userId }) {
 
   const enrichedZones = useMemo(() => {
     return zones.map(zone => {
-      // Count only online users with 'user' role for real-time occupancy
+      // FIX: Count ONLY online users with 'user' role to ensure accurate occupancy visualization
       const count = users.filter(u => 
         u.lastZoneId === zone.id && 
         u.status === 'online' && 
@@ -104,7 +104,7 @@ export function UserDashboard({ userId }) {
   const [latestAlert, setLatestAlert] = useState(null);
 
   useEffect(() => {
-    // Fixed length check to prevent crash when alertsData is null
+    // FIX: Added safe null-check for alertsData to prevent TypeError crash
     if (alertsData && alertsData.length > 0 && userProfile) {
       const applicableAlert = alertsData[0];
       const lastSeen = localStorage.getItem(LAST_SEEN_ALERT_KEY);

@@ -22,7 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { loginUserAction } from '@/lib/actions';
-import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInAnonymously, signOut } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -42,6 +42,11 @@ export function LoginForm() {
     startTransition(async () => {
        try {
          const { auth, firestore } = initializeFirebase();
+         
+         // CRITICAL FIX: Sign out any existing session before starting a new login.
+         // This prevents anonymous session collision on the same device/browser.
+         await signOut(auth);
+
          let userCredential;
          
          if (role === 'admin') {
@@ -62,6 +67,7 @@ export function LoginForm() {
            userCredential = await signInAnonymously(auth);
            const user = userCredential.user;
 
+           // Using unique user.uid ensures no collision between different anonymous sessions
            const userRef = doc(firestore, 'users', user.uid);
            await setDoc(userRef, {
              id: user.uid,
