@@ -8,7 +8,7 @@ import {
 } from '@react-google-maps/api';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '../ui/button';
-import { Trash2, AlertTriangle, MapPin, Focus } from 'lucide-react';
+import { Trash2, AlertTriangle, MapPin, Focus, Navigation } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent } from '../ui/card';
 
@@ -51,19 +51,41 @@ export function GoogleMapsZoneSelector({
     
     mapInstance.fitBounds(bounds);
     
-    // Prevent excessive zooming if zone is small
     const listener = window.google.maps.event.addListener(mapInstance, 'idle', () => {
       if (mapInstance.getZoom() > 20) mapInstance.setZoom(19);
       window.google.maps.event.removeListener(listener);
     });
   }, [mapInstance, coordinates]);
 
+  const centerOnCurrentLocation = useCallback(() => {
+    if (!mapInstance) return;
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          mapInstance.panTo(pos);
+          mapInstance.setZoom(18);
+        },
+        () => {
+          console.log("Geolocation permission denied or error.");
+        }
+      );
+    }
+  }, [mapInstance]);
+
   useEffect(() => {
-    if (mapInstance && coordinates && coordinates.length > 0 && !initialFocusDone.current) {
-      focusOnZone();
+    if (mapInstance && !initialFocusDone.current) {
+      if (coordinates && coordinates.length > 0) {
+        focusOnZone();
+      } else {
+        centerOnCurrentLocation();
+      }
       initialFocusDone.current = true;
     }
-  }, [mapInstance, coordinates, focusOnZone]);
+  }, [mapInstance, coordinates, focusOnZone, centerOnCurrentLocation]);
 
   const handleMapClick = (event) => {
     if (coordinates.length < 15 && event.latLng) {
@@ -92,7 +114,7 @@ export function GoogleMapsZoneSelector({
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <AlertTriangle className="h-12 w-12 text-destructive" />
             <h3 className="font-bold text-lg text-destructive">Maps Error</h3>
-            <p className="text-sm text-muted-foreground">Domain authorization might be required. Referer: {typeof window !== 'undefined' ? window.location.origin : 'unknown'}</p>
+            <p className="text-sm text-muted-foreground">Domain authorization required.</p>
           </div>
         </CardContent>
       </Card>
@@ -102,8 +124,6 @@ export function GoogleMapsZoneSelector({
   if (!isLoaded) {
     return <Skeleton className="h-[400px] w-full rounded-md" />;
   }
-
-  const initialCenter = coordinates.length > 0 ? coordinates[0] : defaultCenter;
 
   return (
     <div className="space-y-2">
@@ -115,13 +135,22 @@ export function GoogleMapsZoneSelector({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={centerOnCurrentLocation}
+            title="Locate Me"
+          >
+            <Navigation className="h-4 w-4" />
+          </Button>
           {coordinates.length > 0 && (
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={focusOnZone}
-              title="Recenter on Zone"
+              title="Focus Zone"
             >
               <Focus className="h-4 w-4" />
             </Button>
@@ -141,7 +170,7 @@ export function GoogleMapsZoneSelector({
       
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={initialCenter}
+        center={defaultCenter}
         zoom={18}
         onClick={handleMapClick}
         onLoad={(map) => setMapInstance(map)}
@@ -172,7 +201,7 @@ export function GoogleMapsZoneSelector({
       </GoogleMap>
       
       <p className="text-xs text-muted-foreground italic bg-muted/50 p-2 rounded">
-        Drag markers to adjust boundaries. The map focuses strictly on defined points to ignore your physical location.
+        The map focuses on your current location when adding. Use red markers to define boundaries.
       </p>
     </div>
   );

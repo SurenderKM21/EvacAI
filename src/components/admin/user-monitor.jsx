@@ -40,7 +40,6 @@ export function UserMonitor({ initialUsers, initialZones }) {
   const db = useFirestore();
   const [isPending, startTransition] = useTransition();
 
-  // Filter out the primary admin and self
   const users = initialUsers.filter((u) => u.role !== 'admin' && u.name !== 'John Doe');
   const loggedInUsers = users.filter((user) => user.status === 'online');
   const loggedOutUsers = users.filter((user) => user.status !== 'online');
@@ -109,7 +108,7 @@ export function UserMonitor({ initialUsers, initialZones }) {
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This will permanently remove the user <strong>{user.name || user.id}</strong>. This action cannot be undone.
+                                    This will permanently remove the user <strong>{user.name || user.id}</strong>.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -157,7 +156,7 @@ export function UserMonitor({ initialUsers, initialZones }) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will permanently delete all logged-out user data from the system. This action cannot be undone.
+                        This will permanently delete all logged-out user data.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

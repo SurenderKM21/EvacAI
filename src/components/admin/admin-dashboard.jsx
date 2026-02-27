@@ -39,7 +39,6 @@ export function AdminDashboard({ userId }) {
 
   const enrichedZones = useMemo(() => {
     return zones.map(zone => {
-      // Logic Fix: Only count online users with role 'user' for density
       const count = users.filter(u => 
         u.lastZoneId === zone.id && 
         u.status === 'online' && 
