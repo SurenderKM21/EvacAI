@@ -22,7 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader } from 'lucide-react';
 import { loginUserAction } from '@/lib/actions';
-import { signInWithEmailAndPassword, signInAnonymously, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -43,19 +43,17 @@ export function LoginForm() {
        try {
          const { auth, firestore } = initializeFirebase();
          
-         // CRITICAL FIX: Sign out any existing session before starting a new login.
-         // This prevents anonymous session collision on the same device/browser.
-         await signOut(auth);
-
          let userCredential;
+         let profileId;
          
          if (role === 'admin') {
            userCredential = await signInWithEmailAndPassword(auth, email, password);
            const user = userCredential.user;
+           profileId = user.uid; // Admins use their persistent UID
            
-           const userRef = doc(firestore, 'users', user.uid);
+           const userRef = doc(firestore, 'users', profileId);
            await setDoc(userRef, {
-             id: user.uid,
+             id: profileId,
              name: 'Main Admin',
              email: email,
              role: 'admin',
@@ -65,18 +63,22 @@ export function LoginForm() {
 
          } else {
            userCredential = await signInAnonymously(auth);
-           const user = userCredential.user;
-
-           // Using unique user.uid ensures no collision between different anonymous sessions
-           const userRef = doc(firestore, 'users', user.uid);
+           // Generate a unique ID for this specific session/tab to prevent collision
+           profileId = `sess-${Math.random().toString(36).substring(2, 15)}`;
+           
+           const userRef = doc(firestore, 'users', profileId);
            await setDoc(userRef, {
-             id: user.uid,
+             id: profileId,
+             authUid: userCredential.user.uid,
              name: username || 'Guest User',
              role: 'user',
              status: 'online',
              lastSeen: new Date().toISOString(),
              sos: false
            }, { merge: true });
+           
+           // Store the profileId in sessionStorage (unique per tab)
+           sessionStorage.setItem('evacai_profile_id', profileId);
          }
 
          const result = await loginUserAction({ email, username, role });

@@ -16,21 +16,25 @@ export function LogoutButton() {
 
   const handleLogout = () => {
     startTransition(async () => {
-       if (user) {
+       const profileId = sessionStorage.getItem('evacai_profile_id') || user?.uid;
+       
+       if (profileId) {
           try {
-            // We await the status update to ensure it hits the server 
-            // before the auth session is invalidated.
-            const userRef = doc(db, 'users', user.uid);
+            // Mark the specific session profile as offline
+            const userRef = doc(db, 'users', profileId);
             await updateDoc(userRef, { status: 'offline' });
           } catch (e) {
-            // If it fails (e.g. no connection), we still want to log out
             console.error('Failed to mark user as offline:', e);
           }
        }
 
        try {
+         // Clear session isolation data
+         sessionStorage.removeItem('evacai_profile_id');
+         
          const { auth } = initializeFirebase();
-         await signOut(auth);
+         // Only sign out of Firebase if no other tabs might be using it
+         // For a prototype, we'll keep it simple and just redirect
          await logoutUserAction();
        } catch (e) {
          console.error('Logout error:', e);

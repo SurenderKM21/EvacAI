@@ -13,6 +13,7 @@ function AdminAuthGuard() {
   const { user, isUserLoading } = useUser();
   const { firestore } = initializeFirebase();
   
+  // Admins always use their Auth UID as the profile key
   const userRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [firestore, user]);
   const { data: profile, isLoading: isProfileLoading } = useDoc(userRef);
 
@@ -28,8 +29,6 @@ function AdminAuthGuard() {
       return;
     }
 
-    // Only redirect to user page if we are SURE they are not an admin
-    // If profile is missing, we wait for setDoc to propagate
     if (profile && profile.role === 'user') {
       router.push('/user');
     }
