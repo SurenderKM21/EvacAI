@@ -1,9 +1,9 @@
-# EvacAI
+# EvacWay
 
-**EvacAI** is a high-performance, real-time crowd management and emergency navigation platform designed for large-scale event spaces. It empowers both event organizers and attendees with live data to ensure safety and efficiency during high-density gatherings.
+**EvacWay** is a high-performance, real-time crowd management and emergency navigation platform designed for large-scale event spaces. It empowers both event organizers and attendees with live data to ensure safety and efficiency during high-density gatherings.
 
 ## 🚀 Mission
-"Navigate smarter, not harder." EvacAI aims to eliminate bottleneck congestion and provide immediate emergency response coordination through a synchronized cloud-based ecosystem.
+"Navigate smarter, not harder." EvacWay aims to eliminate bottleneck congestion and provide immediate emergency response coordination through a synchronized cloud-based ecosystem.
 
 ## 🛠 Tech Stack
 - **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
@@ -32,7 +32,7 @@
 
 ### 1. Route Optimization (Dijkstra's Algorithm)
 Located in `src/lib/actions.ts`.
-EvacAI uses a weighted **Dijkstra’s Algorithm** to find the "Safety-First" path. Unlike standard GPS which looks for the shortest distance, our algorithm assigns "costs" based on crowd density:
+EvacWay uses a weighted **Dijkstra’s Algorithm** to find the "Safety-First" path. Unlike standard GPS which looks for the shortest distance, our algorithm assigns "costs" based on crowd density:
 - **Free:** Cost 1
 - **Moderate:** Cost 3
 - **Crowded:** Cost 10
